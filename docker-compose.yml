@@ -1,0 +1,12 @@
+# docker-compose.yml
+version: '2'
+
+services:
+  spoon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - "8080:8080"
+    volumes:
+    - ./test-static:/usr/src/app/static
