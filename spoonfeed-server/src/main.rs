@@ -6,7 +6,7 @@ static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .route("/", get(index))
+        .route("/", get(|| async { "Hello, world!" }))
         .route("/static/*path", get(static_path));
 
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
@@ -15,9 +15,9 @@ async fn main() {
         .unwrap();
 }
 
-async fn index() -> impl IntoResponse {
-    Response::builder().status(StatusCode::OK).body(body::boxed(Empty::new())).unwrap()
-}
+// async fn index() -> impl IntoResponse {
+//     Response::builder().status(StatusCode::OK).body(body::boxed(Empty::new())).unwrap()
+// }
 
 async fn static_path(Path(path): Path<String>) -> impl IntoResponse {
     let path = path.trim_start_matches('/');
