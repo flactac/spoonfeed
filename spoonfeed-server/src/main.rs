@@ -1,40 +1,20 @@
-use axum::{Router, routing::get, response::IntoResponse, extract::Path, http::{Response, StatusCode, HeaderValue, header}, body::{Empty, self, Full}};
-use include_dir::{include_dir, Dir};
+use axum::{Router, routing::get};
 
-static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
+mod config;
+mod routes;
 
 #[tokio::main]
 async fn main() {
+    let config = config::init();
+
     let app = Router::new()
         .route("/", get(|| async { "Hello, world!" }))
-        .route("/static/*path", get(static_path));
+        .route("/static/*path", get(routes::static_path));
 
-    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
+    let address = format!("{}:{}", config.address, config.port);
+
+    axum::Server::bind(&address.parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-// async fn index() -> impl IntoResponse {
-//     Response::builder().status(StatusCode::OK).body(body::boxed(Empty::new())).unwrap()
-// }
-
-async fn static_path(Path(path): Path<String>) -> impl IntoResponse {
-    let path = path.trim_start_matches('/');
-    let mime_type = mime_guess::from_path(path).first_or_text_plain();
-
-    match STATIC_DIR.get_file(path) {
-        None => Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(body::boxed(Empty::new()))
-            .unwrap(),
-        Some(file) => Response::builder()
-            .status(StatusCode::OK)
-            .header(
-                header::CONTENT_TYPE,
-                HeaderValue::from_str(mime_type.as_ref()).unwrap(),
-            )
-            .body(body::boxed(Full::from(file.contents())))
-            .unwrap()
-    }
 }

@@ -1,8 +1,9 @@
 # docker-compose.yml
-version: '2'
+version: '3.8'
 
 services:
   spoon:
+    container_name: spoonfeed
     build:
       context: .
       dockerfile: Dockerfile
