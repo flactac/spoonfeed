@@ -3,27 +3,30 @@ FROM rustlang/rust:nightly as builder
 RUN USER=root mkdir spoonfeed
 WORKDIR ./spoonfeed
 
-ADD ./ ./
+RUN cargo init
+COPY ./spoonfeed-server/Cargo.toml ./Cargo.toml
+RUN cargo +nightly build --release -Z sparse-registry
+
+COPY ./spoonfeed-server .
 
 RUN cargo +nightly build --release -Z sparse-registry
 
 FROM frolvlad/alpine-glibc
-ARG APP=/usr/src/app
 
 EXPOSE 8080
 
 # RUN groupadd appuser \
 #     && useradd -g appuser appuser \
 
-RUN mkdir -p ${APP} \
-    && mkdir -p ${APP}/static
+RUN mkdir -p /app \
+    && mkdir -p /app/static
 
-COPY --from=builder /spoonfeed/target/release/spoonfeed-server ${APP}/spoonfeed
+COPY spoonfeed-server/config /app/config
+COPY --from=builder /spoonfeed/target/release/spoonfeed-server /app/spoonfeed
 
-# RUN chown -R appuser:appuser ${APP}
+ENV RUST_LOG=info
 
-# USER appuser
-WORKDIR ${APP}
+# COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
 
+WORKDIR /app
 ENTRYPOINT ["./spoonfeed"]
-# CMD ["./spoonfeed"]

@@ -4,6 +4,7 @@ version: '3.8'
 services:
   spoon:
     container_name: spoonfeed
+    init: true
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,3 +12,4 @@ services:
     - "8080:8080"
     volumes:
     - ./test-static:/usr/src/app/static
+    - ./test-config:/usr/src/app/static
