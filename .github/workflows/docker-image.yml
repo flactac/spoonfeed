@@ -1,0 +1,24 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . -f Dockerfile -t spoonfeed
+    - name: Extract docker image file
+      run: docker save -o ./spoonfeed.tar spoonfeed
+    - name: Save tar
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: spoonfeed.tar
+        path: ./spoonfeed.tar
+      
